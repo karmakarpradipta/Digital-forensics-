@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Forensics Quiz — SWAYAM</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #21253a;
+    --border: rgba(255,255,255,0.08);
+    --accent: #6c63ff;
+    --accent-soft: rgba(108,99,255,0.15);
+    --green: #22c55e;
+    --green-soft: rgba(34,197,94,0.12);
+    --red: #ef4444;
+    --red-soft: rgba(239,68,68,0.12);
+    --text: #e8eaf0;
+    --text-muted: #8b8fa8;
+    --text-dim: #5a5f7a;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .badge {
+    background: var(--accent-soft);
+    color: #a5a0ff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(108,99,255,0.3);
+  }
+
+  .site-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-bar-outer {
+    width: 160px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* MAIN LAYOUT */
+  .quiz-container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+
+  /* INTRO SCREEN */
+  .intro-screen {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .intro-screen .big-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 36px;
+  }
+
+  .intro-screen h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #a5a0ff, #6c63ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .intro-screen p {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 2rem;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    text-align: center;
+  }
+
+  .stat-chip .num { font-size: 22px; font-weight: 700; color: var(--text); }
+  .stat-chip .lbl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .question-card.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .q-number {
+    font-size: 12px;
+    font-weight: 600;
+    color: #a5a0ff;
+    background: var(--accent-soft);
+    border: 1px solid rgba(108,99,255,0.25);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .q-type {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* OPTIONS */
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text);
+    font-size: 15px;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: rgba(108,99,255,0.5);
+    background: rgba(108,99,255,0.07);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .opt-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .option-btn.correct {
+    background: var(--green-soft);
+    border-color: var(--green);
+  }
+
+  .option-btn.correct .opt-letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+
+  .option-btn.wrong {
+    background: var(--red-soft);
+    border-color: var(--red);
+  }
+
+  .option-btn.wrong .opt-letter {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+
+  .option-btn.reveal-correct {
+    background: var(--green-soft);
+    border-color: rgba(34,197,94,0.4);
+  }
+
+  .option-btn.reveal-correct .opt-letter {
+    background: rgba(34,197,94,0.3);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* FEEDBACK BLOCK */
+  .feedback-block {
+    margin-top: 1.25rem;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: none;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid;
+    animation: fadeUp 0.25s ease;
+  }
+
+  .feedback-block.show { display: flex; }
+  .feedback-block.correct-fb { background: var(--green-soft); border-color: rgba(34,197,94,0.3); }
+  .feedback-block.wrong-fb   { background: var(--red-soft);   border-color: rgba(239,68,68,0.3); }
+
+  .fb-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  .fb-body {}
+  .fb-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .fb-label.c { color: var(--green); }
+  .fb-label.w { color: var(--red); }
+  .fb-explanation { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+  .fb-correct-ans { font-size: 13px; color: var(--green); margin-top: 4px; }
+
+  /* NAVIGATION */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.35; cursor: default; }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+
+  .btn-start {
+    background: var(--accent);
+    color: #fff;
+    padding: 14px 40px;
+    font-size: 16px;
+    border-radius: var(--radius);
+  }
+
+  .q-dot-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 320px;
+  }
+
+  .q-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .q-dot.answered-c { background: var(--green); border-color: var(--green); }
+  .q-dot.answered-w { background: var(--red); border-color: var(--red); }
+  .q-dot.current { border-color: var(--accent); }
+
+  /* RESULTS SCREEN */
+  .results-screen { display: none; }
+  .results-screen.show { display: block; }
+
+  .score-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .score-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) var(--pct, 0%), var(--surface2) 0%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    position: relative;
+  }
+
+  .score-circle::after {
+    content: '';
+    width: 96px; height: 96px;
+    background: var(--surface);
+    border-radius: 50%;
+    position: absolute;
+  }
+
+  .score-num {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .score-num .big { font-size: 28px; font-weight: 700; color: var(--text); }
+  .score-num .slash { font-size: 16px; color: var(--text-muted); }
+
+  .score-grade {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .score-sub { color: var(--text-muted); font-size: 15px; }
+
+  .result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .r-stat {
+    text-align: center;
+    padding: 12px 20px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .r-stat .rv { font-size: 20px; font-weight: 700; }
+  .r-stat .rl { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .rv.green { color: var(--green); }
+  .rv.red { color: var(--red); }
+
+  /* REVIEW SECTION */
+  .review-header {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-tab {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .filter-tab.active, .filter-tab:hover {
+    background: var(--accent-soft);
+    border-color: rgba(108,99,255,0.4);
+    color: #a5a0ff;
+  }
+
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .review-card.correct-card { border-color: rgba(34,197,94,0.25); }
+  .review-card.wrong-card   { border-color: rgba(239,68,68,0.25); }
+
+  .review-q-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-pill.c { background: var(--green-soft); color: var(--green); }
+  .status-pill.w { background: var(--red-soft);   color: var(--red); }
+
+  .review-q-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .review-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+
+  .review-opt {
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    display: flex;
+    gap: 10px;
+  }
+
+  .review-opt.correct-opt { background: var(--green-soft); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .review-opt.wrong-opt   { background: var(--red-soft);   border-color: rgba(239,68,68,0.3);  color: var(--red); }
+  .review-opt.neutral-opt { background: var(--surface2);   border-color: var(--border);         color: var(--text-muted); }
+
+  .explanation-box {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .explanation-box .exp-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #a5a0ff;
+    margin-bottom: 5px;
+  }
+
+  .explanation-box p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  .retake-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 1rem; flex-wrap: wrap; }
+    .progress-wrap { width: 100%; }
+    .progress-bar-outer { flex: 1; }
+    .quiz-container { padding: 1.5rem 1rem 5rem; }
+    .q-text { font-size: 15px; }
+    .score-circle { width: 100px; height: 100px; }
+    .score-circle::after { width: 80px; height: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="badge">SWAYAM</span>
+  <h1 id="header-title">Digital Forensics Quiz</h1>
+  <div class="progress-wrap" id="progress-wrap" style="display:none">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progress-bar"></div>
+    </div>
+    <span class="progress-text" id="progress-text">0 / 60</span>
+  </div>
+</header>
+
+<main class="quiz-container">
+
+  <!-- INTRO -->
+  <div class="intro-screen" id="intro-screen">
+    <div class="big-icon">🔍</div>
+    <h2>Digital Forensics</h2>
+    <p>Test your knowledge of digital forensics concepts from the SWAYAM course — 60 questions covering theory, tools, and techniques.</p>
+    <div class="stats-row">
+      <div class="stat-chip"><div class="num">60</div><div class="lbl">Questions</div></div>
+      <div class="stat-chip"><div class="num">MCQ</div><div class="lbl">Format</div></div>
+      <div class="stat-chip"><div class="num">∞</div><div class="lbl">Attempts</div></div>
+    </div>
+    <button class="btn btn-start" onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <div id="questions-area"></div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="btn-prev" onclick="navigate(-1)" disabled>← Previous</button>
+      <div class="q-dot-row" id="q-dots"></div>
+      <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">Next →</button>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center">
+      <button class="btn btn-ghost" id="btn-finish" onclick="showResults()" style="display:none">Finish Quiz &amp; See Results</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-screen" id="results-screen">
+    <div class="score-hero">
+      <div class="score-circle" id="score-circle">
+        <div class="score-num">
+          <span class="big" id="res-score">0</span>
+          <span class="slash">/60</span>
+        </div>
+      </div>
+      <div class="score-grade" id="res-grade"></div>
+      <div class="score-sub" id="res-sub"></div>
+      <div class="result-stats">
+        <div class="r-stat"><div class="rv green" id="res-correct">0</div><div class="rl">Correct</div></div>
+        <div class="r-stat"><div class="rv red"   id="res-wrong">0</div><div class="rl">Incorrect</div></div>
+        <div class="r-stat"><div class="rv" id="res-pct" style="color:#a5a0ff">0%</div><div class="rl">Accuracy</div></div>
+      </div>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterReview('all',this)">All (60)</button>
+      <button class="filter-tab" id="tab-wrong" onclick="filterReview('wrong',this)">Incorrect</button>
+      <button class="filter-tab" id="tab-correct" onclick="filterReview('correct',this)">Correct</button>
+    </div>
+
+    <div class="review-header">📋 Answer Review</div>
+    <div id="review-list"></div>
+
+    <div class="retake-row">
+      <button class="btn btn-ghost" onclick="retake()">Retake Quiz</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Crime conducted in the real world but facilitated by the use of computers.",
+    opts: ["Computer based crimes","Computer facilitated crimes","Digital Crime","E-Crime"],
+    ans: 1,
+    exp: "Computer facilitated crimes are traditional crimes (like fraud, trafficking, harassment) that are made easier or enabled through computer use, but the crime itself happens in the real world. Computer based crimes, by contrast, exist entirely within the digital realm."
+  },
+  {
+    q: "Digital evidence obtained without permission/authorization are admissible by courts.",
+    opts: ["True","False"],
+    ans: 1,
+    exp: "False. Evidence obtained without proper legal authorization or warrant is generally inadmissible in court. This falls under the 'fruit of the poisonous tree' doctrine — illegally obtained evidence taints the entire case."
+  },
+  {
+    q: "Digital evidences must follow the requirements of the ______________.",
+    opts: ["Cross Drive Analysis","Forensic Readiness","Best Evidence Rule","Antiforensics"],
+    ans: 2,
+    exp: "The Best Evidence Rule is a legal principle requiring that the original (or most reliable) copy of a document or evidence be presented in court. For digital evidence, this means proper documentation, hash verification, and chain of custody must be maintained."
+  },
+  {
+    q: "EFS stands for __________",
+    opts: ["Encrypting Filing System","Electronic File System","Encrypting File System","Electronic File Security"],
+    ans: 2,
+    exp: "EFS (Encrypting File System) is a feature of Windows NTFS that provides file-level encryption. It allows users to encrypt files and folders so that only authorized users can access them, even if someone gains physical access to the drive."
+  },
+  {
+    q: "Include a tool to collect and analyze __________.",
+    opts: ["Chain of Custody","Forensic Readiness","Metadata","Antiforensics"],
+    ans: 2,
+    exp: "Metadata is 'data about data' — it includes information like file creation/modification timestamps, author, GPS coordinates, and device info. Forensic tools specifically collect and analyze metadata to reconstruct events and timelines in an investigation."
+  },
+  {
+    q: "It is necessary to ensure that staff is competent to perform any roles related to the handling and preservation of evidence.",
+    opts: ["True","False"],
+    ans: 0,
+    exp: "True. Incompetent handling of digital evidence can lead to contamination, accidental modification, or legal challenges. Organizations must ensure staff are trained and certified for their specific forensic roles."
+  },
+  {
+    q: "It is possible to view Encrypted data without the correct key or password.",
+    opts: ["True","False"],
+    ans: 1,
+    exp: "False. Encrypted data appears as meaningless ciphertext without the correct decryption key or password. Modern encryption algorithms (AES, RSA) are computationally infeasible to break by brute force without the key."
+  },
+  {
+    q: "Preservation of the __________ is accomplished by having verifiable documentation that indicates who handled the evidence, when they handled it, and the locations, dates, and times of where the evidence was stored.",
+    opts: ["Chain of Custody","Forensic Readiness","Metadata","Antiforensics"],
+    ans: 0,
+    exp: "Chain of Custody is the documented record of everyone who handled evidence, when, and where. It ensures the integrity and admissibility of evidence by proving it hasn't been tampered with from the time of collection to courtroom presentation."
+  },
+  {
+   
